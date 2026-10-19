@@ -1,0 +1,13 @@
+# PicPolish runtime dependencies (Linux / WSL Ubuntu)
+#
+# The Linux side intentionally does NOT install PyTorch (large CUDA wheels are
+# not available in WSL without extra setup).  The engine automatically falls
+# back to the high quality "pil" backend (Lanczos + gentle unsharp mask).
+# To enable GPU/AI upscaling under WSL, install torch following
+# https://pytorch.org and re-run:  PIC_POLISH_ENGINE=auto scripts/start.sh
+fastapi>=0.110
+uvicorn>=0.27
+python-multipart>=0.0.9
+pillow>=9.0
+numpy>=1.24
+opencv-python-headless>=4.9   # denoise support on Linux/WSL

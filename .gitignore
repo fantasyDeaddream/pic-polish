@@ -1,0 +1,35 @@
+# Python
+.venv/
+.venv-linux/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.probe/
+.probe2/
+
+# Runtime artefacts (cache images are deleted by the stop scripts)
+cache/
+logs/
+.runtime/
+
+# Model weights are downloaded on first start, never committed
+models/*.pth
+models/**/*.pth
+models/*.onnx
+models/*.zip
+models/*.dl.log
+models/*.dl.progress.log
+
+# Dev scratch
+env_probe.py
+
+# Test artefacts
+tests/**/__pycache__/
+tests/e2e/artifacts/
+samples/generated/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.swp
+dist/

@@ -1,0 +1,122 @@
+[
+  {
+    "name": "photo_beach_1920x1200.jpg",
+    "kind": "real-photo",
+    "source": "C:\\Windows\\Web\\Wallpaper\\Theme1\\img1.jpg",
+    "width": 1920,
+    "height": 1200,
+    "note": "从 img1.jpg 复制的真实照片"
+  },
+  {
+    "name": "photo_cliff_1920x1200.jpg",
+    "kind": "real-photo",
+    "source": "C:\\Windows\\Web\\Wallpaper\\Theme1\\img3.jpg",
+    "width": 1920,
+    "height": 1200,
+    "note": "从 img3.jpg 复制的真实照片"
+  },
+  {
+    "name": "photo_night_1920x1200.jpg",
+    "kind": "real-photo",
+    "source": "C:\\Windows\\Web\\Wallpaper\\Theme1\\img4.jpg",
+    "width": 1920,
+    "height": 1200,
+    "note": "从 img4.jpg 复制的真实照片"
+  },
+  {
+    "name": "photo_panorama_3840x1200.jpg",
+    "kind": "real-photo",
+    "source": "C:\\Windows\\Web\\Wallpaper\\Theme1\\img13.jpg",
+    "width": 3840,
+    "height": 1200,
+    "note": "从 img13.jpg 复制的真实照片"
+  },
+  {
+    "name": "photo_1280x720.jpg",
+    "kind": "derived",
+    "source": "photo_cliff_1920x1200.jpg",
+    "width": 1280,
+    "height": 720,
+    "note": "真实照片裁切缩放；720p→1080p 性能/质量主样本"
+  },
+  {
+    "name": "portrait_720x1280.jpg",
+    "kind": "derived",
+    "source": "photo_beach_1920x1200.jpg",
+    "width": 720,
+    "height": 1280,
+    "note": "竖图；720p@短边 → 720x1280"
+  },
+  {
+    "name": "tiny_320x240.png",
+    "kind": "derived",
+    "source": "photo_cliff_1920x1200.jpg",
+    "width": 320,
+    "height": 240,
+    "note": "低分辨率 PNG，测小图放大"
+  },
+  {
+    "name": "large_3840x2160.jpg",
+    "kind": "derived",
+    "source": "photo_panorama_3840x1200.jpg",
+    "width": 3840,
+    "height": 2160,
+    "note": "4K 大图；1080p 档位下为 downscale"
+  },
+  {
+    "name": "odd_1000x667.jpg",
+    "kind": "derived",
+    "source": "photo_night_1920x1200.jpg",
+    "width": 1000,
+    "height": 667,
+    "note": "1000x667；1080p 输出 1616x1080（8px 吸附）"
+  },
+  {
+    "name": "alpha_800x600.png",
+    "kind": "synthetic",
+    "source": "generated",
+    "width": 800,
+    "height": 600,
+    "note": "RGBA 透明通道；中心 alpha=0 圆洞；测 alpha 通道单独缩放"
+  },
+  {
+    "name": "text_gradient_1280x720.png",
+    "kind": "synthetic",
+    "source": "generated",
+    "width": 1280,
+    "height": 720,
+    "note": "渐变+文字+1px 网格；主观清晰度对比与锐度指标"
+  },
+  {
+    "name": "solid_gradient_700x700.png",
+    "kind": "synthetic",
+    "source": "generated",
+    "width": 700,
+    "height": 700,
+    "note": "近均匀渐变；700x700→1080x1080 多 tile 推理，测分块黑块/接缝"
+  },
+  {
+    "name": "anime_1280x720.png",
+    "kind": "synthetic",
+    "source": "generated",
+    "width": 1280,
+    "height": 720,
+    "note": "动漫风格合成帧（大色块+粗线条+渐变）；anime6b / CUGAN 与 x4plus 差异对比"
+  },
+  {
+    "name": "noisy_gauss_1280x720.jpg",
+    "kind": "derived",
+    "source": "photo_cliff_1920x1200.jpg",
+    "width": 1280,
+    "height": 720,
+    "note": "真实照片 + 高斯噪声 σ=18；验证 rrdb denoise=false/true 与 realcugan denoise_level 差异"
+  },
+  {
+    "name": "noisy_saltpepper_1280x720.jpg",
+    "kind": "derived",
+    "source": "photo_cliff_1920x1200.jpg",
+    "width": 1280,
+    "height": 720,
+    "note": "真实照片 + 椒盐噪声 2%；降噪鲁棒性样本"
+  }
+]

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PicPolish · AI 图片超分</title>
+  <meta name="description" content="PicPolish 是在本机运行的图片超分工具：上传图片，选择 720P / 1080P / 2K / 4K 目标分辨率与 Real-ESRGAN / Real-CUGAN 模型，平滑提升清晰度并保持原始宽高比。">
+  <link rel="icon" type="image/svg+xml" href="/web/favicon.svg">
+  <link rel="stylesheet" href="/web/style.css">
+  <script>
+    /* 在 app.js 之前捕获脚本运行错误，便于排查；页面静态内容不受影响。 */
+    window.addEventListener('error', function (event) {
+      try {
+        document.documentElement.setAttribute('data-js-error', String((event && (event.message || event.error)) || 'unknown'));
+      } catch (ignored) { /* noop */ }
+    });
+  </script>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="5" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.8"></rect>
+            <path d="M5.6 16.4l3.3-4 2.7 3.1 1.9-2.2 4 4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M18.7 2.6l.85 2.05 2.05.85-2.05.85-.85 2.05-.85-2.05-2.05-.85 2.05-.85.85-2.05z" fill="currentColor"></path>
+          </svg>
+        </span>
+        <div class="brand-copy">
+          <h1>PicPolish <span class="brand-tag">图片超分</span></h1>
+          <p class="subtitle">本机运行 · 保持原始比例 · AI 平滑提升清晰度</p>
+        </div>
+      </div>
+      <button id="engineBadge" class="engine-badge is-loading" type="button" title="点击重新检测引擎状态">
+        <span class="engine-dot" aria-hidden="true"></span>
+        <span class="engine-label" id="engineLabel">检测引擎中…</span>
+        <span class="engine-detail" id="engineDetail"></span>
+      </button>
+    </header>
+
+    <main id="main">
+      <noscript>
+        <p class="noscript">本工具需要启用 JavaScript 才能上传与处理图片。</p>
+      </noscript>
+
+      <section class="panel" aria-labelledby="tierTitle">
+        <div class="panel-head">
+          <h2 id="tierTitle"><span class="step" aria-hidden="true">1</span>选择目标档位</h2>
+          <p class="panel-hint">保持原始宽高比，按规则自动计算输出尺寸</p>
+        </div>
+        <div class="tier-grid" id="tierGrid" role="radiogroup" aria-labelledby="tierTitle">
+          <button class="tier-card" type="button" role="radio" aria-checked="false" tabindex="-1" data-tier="720p">
+            <span class="tier-name">720P</span>
+            <span class="tier-value">720<small>px</small></span>
+            <span class="tier-rule"><span class="rule-tag">短边固定</span>约 1280 × 720</span>
+          </button>
+          <button class="tier-card is-active" type="button" role="radio" aria-checked="true" tabindex="0" data-tier="1080p">
+            <span class="tier-name">1080P</span>
+            <span class="tier-value">1080<small>px</small></span>
+            <span class="tier-rule"><span class="rule-tag">短边固定</span>约 1920 × 1080</span>
+          </button>
+          <button class="tier-card" type="button" role="radio" aria-checked="false" tabindex="-1" data-tier="2k">
+            <span class="tier-name">2K</span>
+            <span class="tier-value">2560<small>px</small></span>
+            <span class="tier-rule"><span class="rule-tag">长边固定</span>约 2560 × 1440</span>
+          </button>
+          <button class="tier-card" type="button" role="radio" aria-checked="false" tabindex="-1" data-tier="4k">
+            <span class="tier-name">4K</span>
+            <span class="tier-value">3840<small>px</small></span>
+            <span class="tier-rule"><span class="rule-tag">长边固定</span>约 3840 × 2160</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="modelTitle">
+        <div class="panel-head">
+          <h2 id="modelTitle"><span class="step" aria-hidden="true">2</span>选择超分模型</h2>
+          <span class="plan-status" id="modelStatus" role="status">正在加载模型列表…</span>
+        </div>
+        <div class="model-grid" id="modelGrid" role="radiogroup" aria-labelledby="modelTitle"></div>
+        <div class="model-reco-guide" id="modelReco">
+          <span class="reco-item"><b>照片 / 人像</b>Real-ESRGAN 通用照片</span>
+          <span class="reco-item"><b>动漫 / 插画</b>Real-ESRGAN 动漫 或 Real-CUGAN</span>
+          <span class="reco-item"><b>噪点 / 视频截图</b>Real-CUGAN（可调降噪等级）</span>
+          <span class="reco-item"><b>不想过度锐化</b>Real-CUGAN 保守</span>
+        </div>
+        <div class="denoise-panel" id="denoisePanel">
+          <div class="denoise-row" id="denoiseCheckboxRow">
+            <label class="check-label" for="denoiseCheckbox">
+              <input type="checkbox" id="denoiseCheckbox">
+              <span>预处理降噪（OpenCV）</span>
+            </label>
+            <p class="denoise-hint">适合照片噪点 / 夜景；未安装 OpenCV 时由服务端忽略并在结果说明中标注。</p>
+          </div>
+          <div class="denoise-row" id="denoiseLevelRow" hidden>
+            <span class="denoise-label" id="denoiseLevelLabel">降噪等级</span>
+            <div class="segmented" id="denoiseLevelGroup" role="radiogroup" aria-label="降噪等级"></div>
+            <p class="denoise-hint">Real-CUGAN 原生降噪：等级越高画面越干净，细节也越平滑。</p>
+          </div>
+          <div class="denoise-row" id="denoiseFixedRow" hidden>
+            <p class="denoise-hint" id="denoiseFixedHint">该模型使用固定降噪策略，不提供降噪设置。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="uploadTitle">
+        <div class="panel-head">
+          <h2 id="uploadTitle"><span class="step" aria-hidden="true">3</span>选择图片</h2>
+          <p class="panel-hint" id="uploadHint">支持 JPG / PNG / WebP / BMP / TIFF，单张 ≤ 50MB，合计 ≤ 200MB，一次最多 20 张</p>
+        </div>
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-describedby="uploadHint">
+          <input id="fileInput" class="visually-hidden" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.bmp,.tif,.tiff,image/jpeg,image/png,image/webp,image/bmp,image/tiff">
+          <span class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 16.5V4.5m0 0L7.5 9M12 4.5L16.5 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M4 15.5V18a2.5 2.5 0 0 0 2.5 2.5h11A2.5 2.5 0 0 0 20 18v-2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+            </svg>
+          </span>
+          <p class="dropzone-title">拖拽图片到这里，或 <span class="link-like">点击选择文件</span></p>
+          <p class="dropzone-sub">支持一次选择多张；图片尺寸在浏览器本地读取，原图不会发往外部网络</p>
+        </div>
+
+        <div class="file-list-head" id="fileListHead" hidden>
+          <span class="file-count">已选 <strong id="fileCount">0</strong> 张</span>
+          <span class="plan-status" id="planStatus" role="status"></span>
+          <button id="clearFilesBtn" class="btn btn-ghost btn-sm" type="button">清空全部</button>
+        </div>
+        <ul class="file-list" id="fileList"></ul>
+
+        <div class="start-bar" id="startBar" hidden>
+          <p class="start-summary" id="startSummary"></p>
+          <button id="startBtn" class="btn btn-primary btn-lg" type="button">开始处理</button>
+        </div>
+      </section>
+
+      <section class="panel" id="progressPanel" aria-labelledby="progressTitle" hidden>
+        <div class="panel-head">
+          <h2 id="progressTitle"><span class="step" aria-hidden="true">4</span>处理进度</h2>
+          <div class="panel-actions">
+            <span class="job-config" id="jobConfigText"></span>
+            <button id="cancelBtn" class="btn btn-danger-ghost btn-sm" type="button" hidden>取消任务</button>
+          </div>
+        </div>
+        <div class="progress-overall">
+          <div class="progress-meta">
+            <span id="jobStatusText">准备中…</span>
+            <span id="totalProgressText">0%</span>
+          </div>
+          <div class="progress-track" id="totalProgressBar" role="progressbar" aria-label="总进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-fill" id="totalProgressFill"></div>
+          </div>
+        </div>
+        <ul class="progress-list" id="progressList"></ul>
+      </section>
+
+      <section class="panel" id="resultPanel" aria-labelledby="resultTitle" hidden>
+        <div class="panel-head">
+          <h2 id="resultTitle"><span class="step" aria-hidden="true">5</span>处理结果</h2>
+          <p class="panel-hint" id="resultSummary"></p>
+        </div>
+        <div class="result-grid" id="resultGrid"></div>
+        <ul class="result-notices" id="resultNotices"></ul>
+        <div class="result-footer" id="resultFooter">
+          <button id="zipBtn" class="btn btn-primary" type="button">全部另存为 ZIP…</button>
+          <button id="deleteJobBtn" class="btn btn-danger-ghost" type="button">删除任务</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>所有图片仅在本机浏览器与本地服务之间传输，不会上传到外网。</p>
+      <p>结果文件保存在本机缓存目录，停止服务时缓存图片会自动清理。</p>
+      <p class="footer-brand">PicPolish · AI 图片超分</p>
+    </footer>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  <script src="/web/app.js" defer></script>
+</body>
+</html>

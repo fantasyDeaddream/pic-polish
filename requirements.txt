@@ -1,0 +1,13 @@
+# PicPolish runtime dependencies (Windows / project venv)
+#
+# The project venv is created from an existing conda environment with
+# --system-site-packages, so torch/torchvision/Pillow/numpy are reused from that
+# environment.  Only the HTTP stack is installed into the venv itself.
+#
+# Create / repair the venv with:  scripts\setup_env.ps1
+fastapi>=0.110
+uvicorn>=0.27
+python-multipart>=0.0.9
+pillow>=9.0
+numpy>=1.24
+opencv-python-headless>=4.9   # denoise (cv2.fastNlMeansDenoisingColored); 本机装的是 5.0.0
